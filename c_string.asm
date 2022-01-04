@@ -89,8 +89,40 @@ StrCat endp
 
 ; extern "C" char* StrNCat(char* dst, const char* src, size_t count);
 StrNCat proc frame
+    push rsi
+    .pushreg rsi
+    push rdi
+    .pushreg rdi
     .endprolog
 
+    mov r9, rcx
+    test r8, r8
+    jz Done
+
+; Find the end of the dst
+    mov rdi, rcx
+    mov rcx, -1
+    xor al, al
+    repne scasb            ; while (al = *rdi++) {}
+    dec rdi
+
+; Append src
+    mov rsi, rdx
+@@:
+    lodsb 
+    mov byte ptr [rdi], al
+    inc rdi
+    test al, al
+    jz Done
+    dec r8
+    jnz @B
+
+Done:
+    mov rax, r9
+
+    .beginepilog
+    pop rdi
+    pop rsi
     ret
 StrNCat endp
 

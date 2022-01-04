@@ -15,6 +15,7 @@ int main() {
     RUN_TEST(tr, TestStrCpy);
     RUN_TEST(tr, TestStrNCpy);
     RUN_TEST(tr, TestStrCat);
+    RUN_TEST(tr, TestStrNCat);
     RUN_TEST(tr, TestStrLen);
     RUN_TEST(tr, TestStrCmp);
     RUN_TEST(tr, TestMemCmp);
@@ -71,6 +72,35 @@ void TestStrCat() {
   const string str_ref{string(str1) + str2};
 
   const char* result{StrCat(str_data, str2)};
+  ASSERT_EQUAL(str, str_ref)
+  ASSERT_EQUAL(result, str_data)
+}
+
+void TestStrNCat() {
+  constexpr char str1[]{"The behavior is undefined "};
+  constexpr size_t str1_sz{sizeof str1};
+  constexpr char str2[]{"if the destination array does not have enough space"};
+  constexpr size_t str2_sz{sizeof str2};
+
+  string str{str1};
+  str.resize(size(str) + str2_sz - 1);
+  char* str_data{data(str)};
+  string str_ref{string(str1) + str2};
+
+  const char* result{StrNCat(str_data, str2, str2_sz)};  // str2_sz includes '\0'
+  ASSERT_EQUAL(str, str_ref)
+  ASSERT_EQUAL(result, str_data)
+
+  str.back() = '-';
+  str[str1_sz - 1] = '\0';
+  str_ref.back() = '-';
+  result = StrNCat(str_data, str2, str2_sz - 2);
+  ASSERT_EQUAL(str, str_ref)
+  ASSERT_EQUAL(result, str_data)
+
+  str.assign(size(str), '\0');
+  str_ref.assign(size(str), '\0');
+  result = StrNCat(str_data, str2, 0);
   ASSERT_EQUAL(str, str_ref)
   ASSERT_EQUAL(result, str_data)
 }
