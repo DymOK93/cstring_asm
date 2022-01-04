@@ -19,6 +19,7 @@ int main() {
     RUN_TEST(tr, TestStrLen);
     RUN_TEST(tr, TestStrCmp);
     RUN_TEST(tr, TestStrNCmp);
+    RUN_TEST(tr, TestStrChr);
     RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
@@ -152,6 +153,19 @@ void TestStrNCmp() {
   rhs[1] = 'z';
   result = StrNCmp(str1, rhs, matches);
   ASSERT(result < 0)
+}
+
+void TestStrChr() {
+  const char str1[]{"HIJKLMN"};
+  const char str2[1]{};
+  const void* pos{StrChr(str1, 'M')};
+  ASSERT_EQUAL(pos, static_cast<const void*>(str1 + 5))
+  pos = StrChr(str1, 'Z');
+  ASSERT_EQUAL(pos, nullptr)
+  pos = StrChr(str2, 'A');
+  ASSERT_EQUAL(pos, nullptr)
+  pos = StrChr(str2, '\0');
+  ASSERT_EQUAL(pos, str2)
 }
 
 void TestMemChr() {

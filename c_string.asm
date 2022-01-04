@@ -186,9 +186,22 @@ StrNCmp proc
 StrNCmp endp
 
 ; extern "C" const char* StrChr(const char* str, int ch);
-StrChr proc frame
-    .endprolog
+StrChr proc
+    xor eax, eax
+    
+@@:
+    mov al, byte ptr [rcx]
+    cmp al, dl               ; '\0' can also be searched
+    je Found
+    test al, al
+    jz Done
+    inc rcx
+    jmp @B
 
+Found:  
+    mov rax, rcx
+
+Done:
     ret
 StrChr endp
 

@@ -23,6 +23,7 @@ EXTERN_C int StrNCmp(const char* lhs, const char* rhs, size_t count);
 void TestStrNCmp();
 
 EXTERN_C const char* StrChr(const char* str, int ch);
+void TestStrChr();
 
 EXTERN_C const char* StrRChr(const char* str, int ch);
 
