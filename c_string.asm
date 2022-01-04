@@ -105,6 +105,23 @@ StrLen proc frame
 Strlen endp
 
 ; extern "C" int StrCmp(const char* lhs, const char* rhs);
+StrCmp proc
+@@:
+    mov al, byte ptr [rcx]
+    mov r8b, byte ptr [rdx]
+    sub al, r8b              ; al = lhs[i] - rhs[i]
+    jnz @F                   ; al != 0
+    test r8b, r8b            
+    jz @F                    ; rhs[i] == '\0'
+    inc rcx
+    inc rdx
+    jmp @B
+
+@@:
+    movsx eax, al            ; eax = static_cast<int>(al)
+    ret
+StrCmp endp
+
 ; extern "C" int StrNCmp(const char* lhs, const char* rhs, size_t count);
 
 ; extern "C" const char* StrChr(const char* str, int ch);

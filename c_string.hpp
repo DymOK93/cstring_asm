@@ -16,6 +16,8 @@ EXTERN_C size_t StrLen(const char* str);
 void TestStrLen();
 
 EXTERN_C int StrCmp(const char* lhs, const char* rhs);
+void TestStrCmp();
+
 EXTERN_C int StrNCmp(const char* lhs, const char* rhs, size_t count);
 
 EXTERN_C const char* StrChr(const char* str, int ch);

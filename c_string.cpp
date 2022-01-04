@@ -16,6 +16,7 @@ int main() {
     RUN_TEST(tr, TestStrNCpy);
     RUN_TEST(tr, TestStrCat);
     RUN_TEST(tr, TestStrLen);
+    RUN_TEST(tr, TestStrCmp);
     RUN_TEST(tr, TestMemSet);
     RUN_TEST(tr, TestMemCpy);
 
@@ -80,6 +81,23 @@ void TestStrLen() {
 
   constexpr char str2[1]{};
   ASSERT_EQUAL(StrLen(str2), string_view{str2}.size())
+}
+
+void TestStrCmp() {
+  constexpr auto* str1{"The no-operands form of the instruction"};
+  string str2{str1};
+  char* rhs{data(str2)};
+
+  int result{StrCmp(str1, rhs)};
+  ASSERT_EQUAL(result, 0)
+
+  rhs[2] = 'a';
+  result = StrCmp(str1, rhs);
+  ASSERT(result > 0)
+
+  rhs[2] = 'z';
+  result = StrCmp(str1, rhs);
+  ASSERT(result < 0)
 }
 
 void TestMemSet() {
