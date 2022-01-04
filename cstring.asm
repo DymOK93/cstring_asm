@@ -1,5 +1,5 @@
     .code
-; extern "C" char* StrCpy(char* dest, const char* src);
+; extern "C" char* StrCpy(char* dst, const char* src);
 StrCpy proc frame
     push rsi
     .pushreg rsi
@@ -22,7 +22,7 @@ StrCpy proc frame
     ret
 StrCpy endp
 
-; extern "C" char* StrNCpy(char* dest, const char* src, size_t count);
+; extern "C" char* StrNCpy(char* dst, const char* src, size_t count);
 StrNCpy proc frame
     push rsi
     .pushreg rsi
@@ -49,8 +49,8 @@ StrNCpy proc frame
     ret
 StrNCpy endp
 
-; extern "C" char* StrCat(char* dest, const char* src);
-; extern "C" char* StrNCat(char* dest, const char* src, size_t count);
+; extern "C" char* StrCat(char* dst, const char* src);
+; extern "C" char* StrNCat(char* dst, const char* src, size_t count);
 
 ; extern "C" size_t StrLen(const char* str);
 StrLen proc frame
@@ -78,11 +78,11 @@ Strlen endp
 
 ; extern "C" const char* StrRChr(const char* str, int ch);
 
-; extern "C" size_t StrSpn(const char* dest, const char* src);
+; extern "C" size_t StrSpn(const char* dst, const char* src);
 
-; extern "C" size_t StrCSpn(const char* dest, const char* src);
+; extern "C" size_t StrCSpn(const char* dst, const char* src);
 
-; extern "C" const char* StrPbrk(const char* dest, const char* breakset);
+; extern "C" const char* StrPbrk(const char* dst, const char* breakset);
 
 ; extern "C" const char* StrStr(const char* haystack, const char* needle);
 
@@ -92,19 +92,60 @@ Strlen endp
 
 ; extern "C" int MemCmp(const void* lhs, const void* rhs, size_t count);
 
-; extern "C" void* MemSet(void* dest, int ch, size_t count)
-    push rsi
-    .pushreg rsi
+; extern "C" void* MemSet(void* dst, int ch, size_t count)
+MemSet proc frame
     push rdi
     .pushreg rdi
     .endprolog
 
+    mov r10, rcx     ; r10 = dst
+    xor eax, eax     
+    mov al, dl
+    test al, al      
+    jnz Set1
+
+Zero8:
+    mov rcx, r8    
+    mov r9, 0FFFFFFFFFFFFFFF8h ; ~(0x8)
+    and rcx, r9
+    jz Zero4
+    sub r8, rcx
+    shr rcx, 3                 ; rcx /= 8
+    rep stosq    
+    jmp Set1
+
+Zero4:
+    mov rcx, r8    
+    mov r9, 0FFFFFFFFFFFFFFF4h ; ~(0x4)
+    and rcx, r9
+    jz Zero2
+    sub r8, rcx
+    shr rcx, 2                 ; rcx /= 4
+    rep stosd   
+    jmp Set1
+
+Zero2:
+    mov rcx, r8    
+    mov r9, 0FFFFFFFFFFFFFFF2h ; ~(0x4)
+    and rcx, r9
+    jz Set1
+    sub r8, rcx
+    shr rcx, 1                 ; rcx /= 2
+    rep stosw  
+    jmp Set1 
+
+Set1:
+    mov rcx, r8
+    rep stosb 
+
+    mov rax, r10
+
     .beginepilog
     pop rdi
-    pop rsi
     ret
+MemSet endp
 
-; extern "C" void* MemCpy(void* dest, const void* src, size_t count);
+; extern "C" void* MemCpy(void* dst, const void* src, size_t count);
 MemCpy proc frame
     push rsi
     .pushreg rsi
@@ -112,7 +153,7 @@ MemCpy proc frame
     .pushreg rdi
     .endprolog
 
-    mov rax, rcx    ; ret = dest
+    mov rax, rcx    ; ret = dst
     mov rdi, rcx    ; rdi = dst
     mov rsi, rdx    ; rsi = src
 
@@ -123,9 +164,9 @@ Copy8:
     jz Copy4
     sub r8, rcx
     shr rcx, 3                 ; rcx /= 8
-    rep movsq       
+    rep movsq  
+    jmp Copy1     
     
-
 Copy4:
     mov rcx, r8   
     mov r9, 0FFFFFFFFFFFFFFF4h ; ~(0x4)
@@ -133,8 +174,8 @@ Copy4:
     jz Copy2
     sub r8, rcx
     shr rcx, 2                 ; rcx /= 4
-    rep movsd       
-    
+    rep movsd  
+    jmp Copy1     
 
 Copy2:
     mov rcx, r8     
@@ -143,7 +184,8 @@ Copy2:
     jz Copy1
     sub r8, rcx   
     shr rcx, 1                  ; rcx /= 2
-    rep movsw   
+    rep movsw 
+    jmp Copy1  
 
 Copy1:
     mov rcx, r8     
@@ -155,5 +197,5 @@ Copy1:
     ret
 MemCpy endp
 
-; EXTERN_C void* MemMove(void* dest, const void* src, size_t count);
+; EXTERN_C void* MemMove(void* dst, const void* src, size_t count);
     end

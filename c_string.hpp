@@ -35,6 +35,7 @@ EXTERN_C const void* MemChr(const void* ptr, int ch, size_t count);
 EXTERN_C int MemCmp(const void* lhs, const void* rhs, size_t count);
 
 EXTERN_C void* MemSet(void* dest, int ch, size_t count);
+void TestMemSet();
 
 EXTERN_C void* MemCpy(void* dest, const void* src, size_t count);
 void TestMemCpy();
