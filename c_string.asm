@@ -218,8 +218,30 @@ StrTok endp
 
 ; extern "C" const void* MemChr(const void* ptr, int ch, size_t count);
 MemChr proc frame
+    push rdi
+    .pushreg rdi
     .endprolog
 
+    test r8, r8
+    jz NotFound
+
+    mov rdi, rcx
+    mov rcx, r8
+    mov al, dl
+    repne scasb 
+    jnz NotFound
+
+Found:
+    dec rdi
+    mov rax, rdi
+    jmp Done
+
+NotFound:
+    xor eax, eax
+    
+Done:
+    .beginepilog
+    pop rdi
     ret
 MemChr endp
 

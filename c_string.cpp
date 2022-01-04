@@ -18,6 +18,7 @@ int main() {
     RUN_TEST(tr, TestStrNCat);
     RUN_TEST(tr, TestStrLen);
     RUN_TEST(tr, TestStrCmp);
+    RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
     RUN_TEST(tr, TestMemCpy);
@@ -129,6 +130,17 @@ void TestStrCmp() {
   rhs[2] = 'z';
   result = StrCmp(str1, rhs);
   ASSERT(result < 0)
+}
+
+void TestMemChr() {
+  const char str[]{"ABCDEFG"};
+  constexpr size_t str_sz{sizeof str};
+  const void* pos{MemChr(str, 'D', str_sz)};
+  ASSERT_EQUAL(pos, static_cast<const void*>(str + 3))
+  pos = MemChr(str, 'Z', str_sz);
+  ASSERT_EQUAL(pos, nullptr)
+  pos = MemChr(str, 'A', 0);
+  ASSERT_EQUAL(pos, nullptr)
 }
 
 void TestMemCmp() {
