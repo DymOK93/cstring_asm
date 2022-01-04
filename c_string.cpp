@@ -14,6 +14,7 @@ int main() {
     TestRunner tr;
     RUN_TEST(tr, TestStrCpy);
     RUN_TEST(tr, TestStrNCpy);
+    RUN_TEST(tr, TestStrCat);
     RUN_TEST(tr, TestStrLen);
     RUN_TEST(tr, TestMemSet);
     RUN_TEST(tr, TestMemCpy);
@@ -57,6 +58,19 @@ void TestStrNCpy() {
   ref = std::strncpy(buffer, str1, last_pos);
   ASSERT_EQUAL(result, ref)
   ASSERT_EQUAL(buffer[last_pos], '\n')
+}
+
+void TestStrCat() {
+  constexpr auto* str1{"At the assembly-code level, "};
+  constexpr char str2[]{"two forms of this instruction are allowed"};
+  string str{str1};
+  str.resize(size(str) + sizeof str2 - 1);
+  char* str_data{data(str)};
+  const string str_ref{string(str1) + str2};
+
+  const char* result{StrCat(str_data, str2)};
+  ASSERT_EQUAL(str, str_ref)
+  ASSERT_EQUAL(result, str_data)
 }
 
 void TestStrLen() {

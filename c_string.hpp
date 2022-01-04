@@ -8,6 +8,8 @@ EXTERN_C char* StrNCpy(char* dest, const char* src, size_t count);
 void TestStrNCpy();
 
 EXTERN_C char* StrCat(char* dest, const char* src);
+void TestStrCat();
+
 EXTERN_C char* StrNCat(char* dest, const char* src, size_t count);
 
 EXTERN_C size_t StrLen(const char* str);
