@@ -23,6 +23,8 @@ int main() {
     RUN_TEST(tr, TestStrRChr);
     RUN_TEST(tr, TestStrSpn);
     RUN_TEST(tr, TestStrCSpn);
+    RUN_TEST(tr, TestStrPbrk);
+    RUN_TEST(tr, TestStrStr);
     RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
@@ -223,6 +225,44 @@ void TestStrCSpn() {
 
   span_sz = StrCSpn(str2, digits);
   ASSERT_EQUAL(span_sz, 0)
+}
+
+void TestStrPbrk() {
+  constexpr auto* str1{"Hello world, friend of mine!"};
+  constexpr char str2[1]{};
+  constexpr auto* sep{" ,!"};
+
+  constexpr size_t matches[]{5, 11, 12, 19, 22, 27};
+  constexpr size_t matches_cnt{sizeof matches / sizeof(size_t)};
+
+  size_t matches_idx{0};
+  for (const char* current = str1;; ++current) {
+    current = StrPbrk(current, sep);
+    if (!current) {
+      ASSERT_EQUAL(matches_idx, matches_cnt)
+      break;
+    }
+    ASSERT_EQUAL(static_cast<size_t>(current - str1), matches[matches_idx])
+    ++matches_idx;
+  }
+
+  const char* result{StrPbrk(str2, sep)};
+  ASSERT_EQUAL(result, nullptr)
+}
+
+void TestStrStr() {
+  constexpr auto* str1{"Pops a doubleword (POPFD) from the top of the stack"};
+  constexpr char str2[1]{};
+
+  const char* result{StrStr(str1, "POPFD")};
+  ASSERT_EQUAL(static_cast<const void*>(result), static_cast<const void*>(str1 + 19))
+
+  result = StrStr(str1, "PUSHFD");
+  ASSERT_EQUAL(static_cast<const void*>(result), nullptr)
+
+  result = StrStr(str2, "");
+  ASSERT_EQUAL(static_cast<const void*>(result),
+               static_cast<const void*>(str2))
 }
 
 void TestMemChr() {

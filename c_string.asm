@@ -263,7 +263,7 @@ DstLoop:                   ; while (dst[i] != '\0') { ... }
     jz Done
     mov r8, rdx            ; r8 = src
 
-SrcLoop:                   ; while (src[j] != '\0' && src[i] != dst[j]) { j++; }
+SrcLoop:                   ; while (src[j] != '\0' && dsr[i] != src[j]) { j++; }
     mov r9b, byte ptr [r8]
     test r9b, r9b
     jz Done
@@ -299,7 +299,7 @@ DstLoop:                   ; while (dst[i] != '\0') { ... }
     jz Done
     mov r8, rdx            ; r8 = src
 
-SrcLoop:                   ; while (src[j] != '\0' && src[i] != dst[j]) { j++; }
+SrcLoop:                   ; while (src[j] != '\0' && dst[i] != src[j]) { j++; }
     mov r9b, byte ptr [r8]
     test r9b, r9b
     jz @F
@@ -322,15 +322,75 @@ StrCSpn endp
 
 ; extern "C" const char* StrPbrk(const char* dst, const char* breakset);
 StrPbrk proc frame
+    push rsi
+    .pushreg rsi
     .endprolog
 
+    mov rsi, rcx
+
+DstLoop:                   ; while (dst[i] != '\0') { ... }
+    lodsb 
+    test al, al
+    jz NotFound
+    mov r8, rdx            ; r8 = breakset
+
+BreaksetLoop:              ; while (breakset[j] != '\0' && dst[i] != breakset[j]) { j++; }
+    mov r9b, byte ptr [r8]
+    test r9b, r9b
+    jz DstLoop
+    cmp al, r9b
+    je Found
+    inc r8
+    jmp BreaksetLoop
+
+Found:
+    dec rsi
+    mov rax, rsi
+    jmp Done
+
+NotFound:
+    xor eax, eax
+    
+Done:
+    .beginepilog
+    pop rsi
     ret
 StrPbrk endp
 
 ; extern "C" const char* StrStr(const char* haystack, const char* needle);
-StrStr proc frame
-    .endprolog
+StrStr proc
+; Check for empty string
+    mov al, byte ptr [rcx]
+    test al, al
+    jnz RestartScan
+    mov rax, rcx
+    jmp Done
 
+RestartScan:
+    mov r8, rdx                   ; r8 = needle
+    mov r10, rcx                  ; r10 = haystack
+ContinueScan:
+    mov r9b, byte ptr [r8]
+    test r9b, r9b
+    jz Found
+    inc rcx
+    mov al, byte ptr [rcx]        ; al = *haystack
+    test al, al
+    jz NotFound
+    cmp al, r9b
+    jne RestartScan
+    inc r8
+    jmp ContinueScan
+
+Found:
+    inc r10
+    mov rax, r10
+    jmp Done
+
+NotFound:
+    xor eax, eax
+
+Done:
     ret
 StrStr endp
 

@@ -35,8 +35,10 @@ EXTERN_C size_t StrCSpn(const char* dest, const char* src);
 void TestStrCSpn();
 
 EXTERN_C const char* StrPbrk(const char* dest, const char* breakset);
+void TestStrPbrk();
 
 EXTERN_C const char* StrStr(const char* haystack, const char* needle);
+void TestStrStr();
 
 EXTERN_C char* StrTok(char* str, const char* delim);
 
