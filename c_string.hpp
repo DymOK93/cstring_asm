@@ -32,6 +32,7 @@ EXTERN_C size_t StrSpn(const char* dest, const char* src);
 void TestStrSpn();
 
 EXTERN_C size_t StrCSpn(const char* dest, const char* src);
+void TestStrCSpn();
 
 EXTERN_C const char* StrPbrk(const char* dest, const char* breakset);
 

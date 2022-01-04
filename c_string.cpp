@@ -22,6 +22,7 @@ int main() {
     RUN_TEST(tr, TestStrChr);
     RUN_TEST(tr, TestStrRChr);
     RUN_TEST(tr, TestStrSpn);
+    RUN_TEST(tr, TestStrCSpn);
     RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
@@ -205,6 +206,22 @@ void TestStrSpn() {
   ASSERT_EQUAL(span_sz, 0)
 
   span_sz = StrSpn(str2, digits);
+  ASSERT_EQUAL(span_sz, 0)
+}
+
+void TestStrCSpn() {
+  constexpr auto* str1{"abcde312$#@"};
+  constexpr char str2[1]{};
+  constexpr auto* invalid{"*$#"};
+  constexpr auto* digits{"1234567890"};
+
+  size_t span_sz{StrCSpn(str1, invalid)};
+  ASSERT_EQUAL(span_sz, 8)
+
+  span_sz = StrCSpn(str1, digits);
+  ASSERT_EQUAL(span_sz, 5)
+
+  span_sz = StrCSpn(str2, digits);
   ASSERT_EQUAL(span_sz, 0)
 }
 
