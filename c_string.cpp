@@ -20,6 +20,7 @@ int main() {
     RUN_TEST(tr, TestStrCmp);
     RUN_TEST(tr, TestStrNCmp);
     RUN_TEST(tr, TestStrChr);
+    RUN_TEST(tr, TestStrRChr);
     RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
@@ -158,23 +159,47 @@ void TestStrNCmp() {
 void TestStrChr() {
   const char str1[]{"HIJKLMN"};
   const char str2[1]{};
+
   const void* pos{StrChr(str1, 'M')};
   ASSERT_EQUAL(pos, static_cast<const void*>(str1 + 5))
+
   pos = StrChr(str1, 'Z');
   ASSERT_EQUAL(pos, nullptr)
+
   pos = StrChr(str2, 'A');
   ASSERT_EQUAL(pos, nullptr)
+
   pos = StrChr(str2, '\0');
+  ASSERT_EQUAL(pos, str2)
+}
+
+void TestStrRChr() {
+  const char str1[]{"OPQRSOT"};
+  const char str2[1]{};
+
+  const void* pos{StrRChr(str1, 'O')};
+  ASSERT_EQUAL(pos, static_cast<const void*>(str1 + 5))
+
+  pos = StrRChr(str1, 'Z');
+  ASSERT_EQUAL(pos, nullptr)
+
+  pos = StrRChr(str1, '\0');
+  ASSERT_EQUAL(pos, static_cast<const void*>(str1 + 7))
+
+  pos = StrRChr(str2, '\0');
   ASSERT_EQUAL(pos, str2)
 }
 
 void TestMemChr() {
   const char str[]{"ABCDEFG"};
   constexpr size_t str_sz{sizeof str};
+
   const void* pos{MemChr(str, 'D', str_sz)};
   ASSERT_EQUAL(pos, static_cast<const void*>(str + 3))
+
   pos = MemChr(str, 'Z', str_sz);
   ASSERT_EQUAL(pos, nullptr)
+
   pos = MemChr(str, 'A', 0);
   ASSERT_EQUAL(pos, nullptr)
 }

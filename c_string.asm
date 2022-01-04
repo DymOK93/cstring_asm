@@ -188,7 +188,7 @@ StrNCmp endp
 ; extern "C" const char* StrChr(const char* str, int ch);
 StrChr proc
     xor eax, eax
-    
+
 @@:
     mov al, byte ptr [rcx]
     cmp al, dl               ; '\0' can also be searched
@@ -207,8 +207,44 @@ StrChr endp
 
 ; extern "C" const char* StrRChr(const char* str, int ch);
 StrRChr proc frame
+    push rdi
+    .pushreg rdi
     .endprolog
 
+; Find the end of the dst
+    mov rdi, rcx
+    mov r8, rcx
+    mov rcx, -1
+    xor al, al
+    repne scasb            ; while (al = *rdi++) {}
+    dec rdi
+
+    test dl, dl
+    jz Found
+
+    neg rcx
+    dec rcx                ; rcx = strlen(str)
+
+    pushfq
+    std                    ; RFLAGS.DF = 1
+    mov al, dl
+    repne scasb
+    popfq
+
+    test rcx, rcx          ; Reached beginning of string
+    jz NotFound
+    inc rdi
+
+Found:
+    mov rax, rdi
+    jmp Done  
+
+NotFound:
+    xor eax, eax
+
+Done:
+    .beginepilog
+    pop rdi
     ret
 StrRChr endp
 
@@ -424,4 +460,6 @@ Copy1:
 MemCpy endp
 
 ; EXTERN_C void* MemMove(void* dst, const void* src, size_t count);
+MemMove proc
+MemMove endp
     end
