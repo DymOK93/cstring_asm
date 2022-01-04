@@ -17,6 +17,7 @@ int main() {
     RUN_TEST(tr, TestStrCat);
     RUN_TEST(tr, TestStrLen);
     RUN_TEST(tr, TestStrCmp);
+    RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
     RUN_TEST(tr, TestMemCpy);
 
@@ -97,6 +98,25 @@ void TestStrCmp() {
 
   rhs[2] = 'z';
   result = StrCmp(str1, rhs);
+  ASSERT(result < 0)
+}
+
+void TestMemCmp() {
+  const string str1{"JSON for Modern C++ version 3.10.5"};
+  string str2{str1};
+  const size_t str_sz{size(str1)};
+  const char* lhs{data(str1)};
+  char* rhs{data(str2)};
+
+  int result{MemCmp(lhs, rhs, str_sz)};
+  ASSERT_EQUAL(result, 0)
+
+  rhs[3] = 'A';
+  result = MemCmp(lhs, rhs, str_sz);
+  ASSERT(result > 0)
+
+  rhs[3] = 'Z';
+  result = MemCmp(lhs, rhs, str_sz);
   ASSERT(result < 0)
 }
 

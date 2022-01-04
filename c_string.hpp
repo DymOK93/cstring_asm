@@ -37,6 +37,7 @@ EXTERN_C char* StrTok(char* str, const char* delim);
 EXTERN_C const void* MemChr(const void* ptr, int ch, size_t count);
 
 EXTERN_C int MemCmp(const void* lhs, const void* rhs, size_t count);
+void TestMemCmp();
 
 EXTERN_C void* MemSet(void* dest, int ch, size_t count);
 void TestMemSet();

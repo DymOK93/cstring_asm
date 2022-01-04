@@ -193,8 +193,30 @@ MemChr endp
 
 ; extern "C" int MemCmp(const void* lhs, const void* rhs, size_t count);
 MemCmp proc frame
+    push rsi
+    .pushreg rsi
+    push rdi
+    .pushreg rdi
     .endprolog
 
+    xor eax, eax
+    test r8, r8
+    jz Done
+
+    mov rsi, rcx
+    mov rdi, rdx
+    mov rcx, r8
+    repe cmpsb
+    jz Done
+
+    mov al, byte ptr [rsi - 1]
+    sub al, byte ptr [rdi - 1]
+    movsx eax, al
+
+Done:
+    .beginepilog
+    pop rdi
+    pop rsi
     ret
 MemCmp endp
 
