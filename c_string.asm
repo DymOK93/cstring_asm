@@ -1,5 +1,4 @@
     .data
-    StrTokLastArg       qword ?
     StrTokCurrentToken  qword ?
  
     .code
@@ -396,8 +395,70 @@ StrStr endp
 
 ; extern "C" char* StrTok(char* str, const char* delim);
 StrTok proc frame
+    push rsi
+    .pushreg rsi
     .endprolog
 
+    test rcx, rcx                  
+    cmovz rcx, [StrTokCurrentToken]      ; if (!str) { str = StrTokCurrentToken; }
+
+    mov rsi, rcx
+
+; Skip all characters from delim
+SkipLoop:
+    lodsb
+    test al, al
+    jz NotFound
+    mov r8, rdx            ; r8 = delim
+
+ContainsDelimLoop:
+    mov r9b, byte ptr [r8]
+    test r9b, r9b
+    jz Tokenize
+    cmp al, r9b
+    je SkipLoop
+    inc r8
+    jmp ContainsDelimLoop
+
+; All delimiters were skipped
+Tokenize:
+    dec rsi
+    mov r10, rsi
+
+StrLoop:
+    lodsb
+    test al, al
+    jz SingleToken
+    mov r8, rdx           ; r8 = delim
+
+SearchDelimLoop:
+    mov r9b, byte ptr [r8]
+    test r9b, r9b
+    jz StrLoop
+    cmp al, r9b
+    je Found
+    inc r8
+    jmp SearchDelimLoop
+
+Found:
+    mov [StrTokCurrentToken], rsi   ; *StrTokCurrentToken - next pos after '\0'
+    dec rsi  
+    mov byte ptr [rsi], 0
+    mov rax, r10
+    jmp Done
+
+SingleToken:
+    dec rsi
+    mov [StrTokCurrentToken], rsi    ; *StrTokCurrentToken == '\0'
+    mov rax, r10
+    jmp Done
+
+NotFound:
+    xor eax, eax
+
+Done:
+    .beginepilog
+    pop rsi
     ret
 StrTok endp
 

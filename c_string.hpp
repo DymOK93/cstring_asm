@@ -41,6 +41,7 @@ EXTERN_C const char* StrStr(const char* haystack, const char* needle);
 void TestStrStr();
 
 EXTERN_C char* StrTok(char* str, const char* delim);
+void TestStrTok();
 
 EXTERN_C const void* MemChr(const void* ptr, int ch, size_t count);
 void TestMemChr();

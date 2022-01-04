@@ -25,6 +25,7 @@ int main() {
     RUN_TEST(tr, TestStrCSpn);
     RUN_TEST(tr, TestStrPbrk);
     RUN_TEST(tr, TestStrStr);
+    RUN_TEST(tr, TestStrTok);
     RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
@@ -255,14 +256,36 @@ void TestStrStr() {
   constexpr char str2[1]{};
 
   const char* result{StrStr(str1, "POPFD")};
-  ASSERT_EQUAL(static_cast<const void*>(result), static_cast<const void*>(str1 + 19))
+  ASSERT_EQUAL(static_cast<const void*>(result),
+               static_cast<const void*>(str1 + 19))
 
   result = StrStr(str1, "PUSHFD");
   ASSERT_EQUAL(static_cast<const void*>(result), nullptr)
 
   result = StrStr(str2, "");
-  ASSERT_EQUAL(static_cast<const void*>(result),
-               static_cast<const void*>(str2))
+  ASSERT_EQUAL(static_cast<const void*>(result), static_cast<const void*>(str2))
+}
+
+void TestStrTok() {
+  char str1[]{"    A little, little bird came down the walk"};
+  char str2[]{"SingleToken"};
+  char str3[]{"   "};
+  constexpr auto* sep{" ,"};
+  const char* tokens[]{"A",    "little", "little", "bird",
+                       "came", "down",   "the",    "walk"};
+
+  size_t token_idx{0};
+  const char* token{StrTok(str1, sep)};
+  while (token) {
+    ASSERT_EQUAL(string_view{token}, tokens[token_idx++])
+    token = StrTok(nullptr, sep);
+  }
+
+  const char* single_token{StrTok(str2, sep)};
+  ASSERT_EQUAL(single_token, string_view{"SingleToken"})
+
+  const char* no_tokens{StrTok(str3, sep)};
+  ASSERT_EQUAL(static_cast<const void*>(no_tokens), nullptr)
 }
 
 void TestMemChr() {
