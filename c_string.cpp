@@ -101,11 +101,11 @@ void TestStrCmp() {
 }
 
 void TestMemSet() {
-  vector<unsigned char> vec1(0, 0);
+  vector<unsigned char> vec1(115, 0);
   unsigned char* dst{data(vec1)};
   const size_t vec_sz{size(vec1)};
 
-  const vector<unsigned char> vec2(0, 42);
+  const vector<unsigned char> vec2(vec_sz, 42);
   const void* result{MemSet(dst, 42, vec_sz)};
   ASSERT_EQUAL(vec1, vec2)
   ASSERT_EQUAL(result, dst)

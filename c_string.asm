@@ -1,3 +1,7 @@
+    .data
+    StrTokLastArg       qword ?
+    StrTokCurrentToken  qword ?
+ 
     .code
 ; extern "C" char* StrCpy(char* dst, const char* src);
 StrCpy proc frame
@@ -84,6 +88,11 @@ StrCat proc frame
 StrCat endp
 
 ; extern "C" char* StrNCat(char* dst, const char* src, size_t count);
+StrNCat proc frame
+    .endprolog
+
+    ret
+StrNCat endp
 
 ; extern "C" size_t StrLen(const char* str);
 StrLen proc frame
@@ -123,24 +132,71 @@ StrCmp proc
 StrCmp endp
 
 ; extern "C" int StrNCmp(const char* lhs, const char* rhs, size_t count);
+StrNCmp proc
+StrNCmp endp
 
 ; extern "C" const char* StrChr(const char* str, int ch);
+StrChr proc frame
+    .endprolog
+
+    ret
+StrChr endp
 
 ; extern "C" const char* StrRChr(const char* str, int ch);
+StrRChr proc frame
+    .endprolog
+
+    ret
+StrRChr endp
 
 ; extern "C" size_t StrSpn(const char* dst, const char* src);
+StrSpn proc frame
+    .endprolog
+
+    ret
+StrSpn endp
 
 ; extern "C" size_t StrCSpn(const char* dst, const char* src);
+StrCSpn proc frame
+    .endprolog
+
+    ret
+StrCSpn endp
 
 ; extern "C" const char* StrPbrk(const char* dst, const char* breakset);
+StrPbrk proc frame
+    .endprolog
+
+    ret
+StrPbrk endp
 
 ; extern "C" const char* StrStr(const char* haystack, const char* needle);
+StrStr proc frame
+    .endprolog
+
+    ret
+StrStr endp
 
 ; extern "C" char* StrTok(char* str, const char* delim);
+StrTok proc frame
+    .endprolog
+
+    ret
+StrTok endp
 
 ; extern "C" const void* MemChr(const void* ptr, int ch, size_t count);
+MemChr proc frame
+    .endprolog
+
+    ret
+MemChr endp
 
 ; extern "C" int MemCmp(const void* lhs, const void* rhs, size_t count);
+MemCmp proc frame
+    .endprolog
+
+    ret
+MemCmp endp
 
 ; extern "C" void* MemSet(void* dst, int ch, size_t count)
 MemSet proc frame
@@ -148,39 +204,54 @@ MemSet proc frame
     .pushreg rdi
     .endprolog
 
-    mov r10, rcx     ; r10 = dst
-    xor eax, eax     
-    mov al, dl
-    test al, al      
-    jnz Set1
+    mov rdi, rcx     ; rdi = dst
+    mov r11, rcx
+    movzx eax, dl
+    movzx r9, dl
 
-Zero8:
-    mov rcx, r8    
-    mov r9, 0FFFFFFFFFFFFFFF8h ; ~(0x8)
-    and rcx, r9
-    jz Zero4
+; Dispatch by size
+    mov rcx, r8
+    and rcx, -8     ; 0xFFFFFFFF'FFFFFFF8
+    jnz Set8
+    and rcx, -12    ; 0xFFFFFFFF'FFFFFFF4
+    jnz Set4
+    and rcx, -14    ; 0xFFFFFFFF'FFFFFFF2
+    jnz Set2
+    jmp Set1
+
+Set8:
     sub r8, rcx
     shr rcx, 3                 ; rcx /= 8
+    mov r10d, 7
+
+@@:
+    shl r9, 8
+    or rax, r9
+    dec r10d
+    jnz @B
+
     rep stosq    
     jmp Set1
 
-Zero4:
-    mov rcx, r8    
-    mov r9, 0FFFFFFFFFFFFFFF4h ; ~(0x4)
-    and rcx, r9
-    jz Zero2
+Set4:
     sub r8, rcx
     shr rcx, 2                 ; rcx /= 4
+    mov r10d, 3
+
+@@:
+    shl r9, 8
+    or rax, r9
+    dec r10d
+    jnz @B
+
     rep stosd   
     jmp Set1
 
-Zero2:
-    mov rcx, r8    
-    mov r9, 0FFFFFFFFFFFFFFF2h ; ~(0x4)
-    and rcx, r9
-    jz Set1
+Set2:
     sub r8, rcx
     shr rcx, 1                 ; rcx /= 2
+    shl r9, 8
+    or rax, r9
     rep stosw  
     jmp Set1 
 
@@ -188,7 +259,7 @@ Set1:
     mov rcx, r8
     rep stosb 
 
-    mov rax, r10
+    mov rax, r11
 
     .beginepilog
     pop rdi
@@ -207,38 +278,36 @@ MemCpy proc frame
     mov rdi, rcx    ; rdi = dst
     mov rsi, rdx    ; rsi = src
 
-Copy8:
-    mov rcx, r8    
-    mov r9, 0FFFFFFFFFFFFFFF8h ; ~(0x8)
-    and rcx, r9
-    jz Copy4
+; Dispatch by size
+    mov rcx, r8
+    and rcx, -8     ; 0xFFFFFFFF'FFFFFFF8
+    jnz Copy8
+    and rcx, -12    ; 0xFFFFFFFF'FFFFFFF4
+    jnz Copy4
+    and rcx, -14    ; 0xFFFFFFFF'FFFFFFF2
+    jnz Copy2
+    jmp Copy1
+
+Copy8:  
     sub r8, rcx
     shr rcx, 3                 ; rcx /= 8
     rep movsq  
     jmp Copy1     
     
 Copy4:
-    mov rcx, r8   
-    mov r9, 0FFFFFFFFFFFFFFF4h ; ~(0x4)
-    and rcx, r9
-    jz Copy2
     sub r8, rcx
     shr rcx, 2                 ; rcx /= 4
     rep movsd  
     jmp Copy1     
 
 Copy2:
-    mov rcx, r8     
-    mov r9, 0FFFFFFFFFFFFFFF2h  ; ~(0x2)
-    and rcx, r9
-    jz Copy1
-    sub r8, rcx   
+    sub r8, rcx
     shr rcx, 1                  ; rcx /= 2
     rep movsw 
     jmp Copy1  
 
 Copy1:
-    mov rcx, r8     
+    mov rcx, r8  
     rep movsb      
 
     .beginepilog
