@@ -29,6 +29,7 @@ EXTERN_C const char* StrRChr(const char* str, int ch);
 void TestStrRChr();
 
 EXTERN_C size_t StrSpn(const char* dest, const char* src);
+void TestStrSpn();
 
 EXTERN_C size_t StrCSpn(const char* dest, const char* src);
 

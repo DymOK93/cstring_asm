@@ -21,6 +21,7 @@ int main() {
     RUN_TEST(tr, TestStrNCmp);
     RUN_TEST(tr, TestStrChr);
     RUN_TEST(tr, TestStrRChr);
+    RUN_TEST(tr, TestStrSpn);
     RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
@@ -91,7 +92,8 @@ void TestStrNCat() {
   char* str_data{data(str)};
   string str_ref{string(str1) + str2};
 
-  const char* result{StrNCat(str_data, str2, str2_sz)};  // str2_sz includes '\0'
+  const char* result{
+      StrNCat(str_data, str2, str2_sz)};  // str2_sz includes '\0'
   ASSERT_EQUAL(str, str_ref)
   ASSERT_EQUAL(result, str_data)
 
@@ -145,7 +147,7 @@ void TestStrNCmp() {
   ASSERT(result < 0)
 
   result = StrNCmp(str1, rhs, matches);
-  ASSERT_EQUAL(result,  0)
+  ASSERT_EQUAL(result, 0)
 
   rhs[1] = 'a';
   result = StrNCmp(str1, rhs, matches);
@@ -188,6 +190,22 @@ void TestStrRChr() {
 
   pos = StrRChr(str2, '\0');
   ASSERT_EQUAL(pos, str2)
+}
+
+void TestStrSpn() {
+  constexpr auto* str1{"abcde312$#@"};
+  constexpr char str2[1]{};
+  constexpr auto* low_alpha{"qwertyuiopasdfghjklzxcvbnm"};
+  constexpr auto* digits{"1234567890"};
+
+  size_t span_sz{StrSpn(str1, low_alpha)};
+  ASSERT_EQUAL(span_sz, 5)
+
+  span_sz = StrSpn(str1, digits);
+  ASSERT_EQUAL(span_sz, 0)
+
+  span_sz = StrSpn(str2, digits);
+  ASSERT_EQUAL(span_sz, 0)
 }
 
 void TestMemChr() {

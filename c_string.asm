@@ -250,8 +250,37 @@ StrRChr endp
 
 ; extern "C" size_t StrSpn(const char* dst, const char* src);
 StrSpn proc frame
+    push rsi
+    .pushreg rsi
     .endprolog
 
+    mov rsi, rcx
+    xor ecx, ecx
+
+DstLoop:                   ; while (dst[i] != '\0') { ... }
+    lodsb 
+    test al, al
+    jz Done
+    mov r8, rdx            ; r8 = src
+
+SrcLoop:                   ; while (src[j] != '\0' && src[i] != dst[j]) { j++; }
+    mov r9b, byte ptr [r8]
+    test r9b, r9b
+    jz Done
+    cmp al, r9b
+    je @F
+    inc r8
+    jmp SrcLoop
+
+@@:
+    inc rcx
+    jmp DstLoop
+    
+Done:
+    mov rax, rcx
+
+    .beginepilog
+    pop rsi
     ret
 StrSpn endp
 
