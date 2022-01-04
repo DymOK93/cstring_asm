@@ -164,7 +164,25 @@ StrCmp proc
 StrCmp endp
 
 ; extern "C" int StrNCmp(const char* lhs, const char* rhs, size_t count);
-StrNCmp proc
+StrNCmp proc 
+    xor al, al
+
+@@:
+    dec r8
+    jz @F
+    mov al, byte ptr [rcx]
+    mov r9b, byte ptr [rdx]
+    sub al, r9b              ; al = lhs[i] - rhs[i]
+    jnz @F                   ; al != 0
+    test r9b, r9b            
+    jz @F                    ; rhs[i] == '\0'
+    inc rcx
+    inc rdx
+    jmp @B
+
+@@:
+    movsx eax, al            ; eax = static_cast<int>(al)
+    ret
 StrNCmp endp
 
 ; extern "C" const char* StrChr(const char* str, int ch);

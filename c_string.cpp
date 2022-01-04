@@ -18,6 +18,7 @@ int main() {
     RUN_TEST(tr, TestStrNCat);
     RUN_TEST(tr, TestStrLen);
     RUN_TEST(tr, TestStrCmp);
+    RUN_TEST(tr, TestStrNCmp);
     RUN_TEST(tr, TestMemChr);
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
@@ -129,6 +130,27 @@ void TestStrCmp() {
 
   rhs[2] = 'z';
   result = StrCmp(str1, rhs);
+  ASSERT(result < 0)
+}
+
+void TestStrNCmp() {
+  constexpr char str1[]{"pointer to the null-terminated string"};
+  string str2{"pointer to the string"};
+  const size_t matches{15};
+  char* rhs{data(str2)};
+
+  int result{StrNCmp(str1, rhs, sizeof str1)};
+  ASSERT(result < 0)
+
+  result = StrNCmp(str1, rhs, matches);
+  ASSERT_EQUAL(result,  0)
+
+  rhs[1] = 'a';
+  result = StrNCmp(str1, rhs, matches);
+  ASSERT(result > 0)
+
+  rhs[1] = 'z';
+  result = StrNCmp(str1, rhs, matches);
   ASSERT(result < 0)
 }
 
