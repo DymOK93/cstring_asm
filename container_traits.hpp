@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace algo::container {
+namespace traits::container {
 template <class Ty, class = void>
 struct is_iterable : std::false_type {};
 
@@ -143,4 +143,4 @@ struct data_type<Ty,
 
 template <class Ty>
 using data_type_t = typename data_type<Ty>::type;
-}  // namespace algo::container
+}  // namespace traits::container

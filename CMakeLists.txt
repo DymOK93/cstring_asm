@@ -15,6 +15,8 @@ set(
 
 add_executable (
 	CStringTest
+		"container_traits.hpp"
+		"test_runner.hpp"
 		"c_string.hpp"
 		"c_string.cpp"
 		"c_string.asm"
