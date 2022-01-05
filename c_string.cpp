@@ -1,6 +1,6 @@
 ﻿#include "c_string.hpp"
 
-#include "test_runner.h"
+#include "test_runner.hpp"
 
 #include <iostream>
 #include <numeric>
@@ -30,7 +30,7 @@ int main() {
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
     RUN_TEST(tr, TestMemCpy);
-    // RUN_TEST(tr, TestMemMove);
+    RUN_TEST(tr, TestMemMove);
 
   } catch (...) {
     return 1;
@@ -370,6 +370,6 @@ void TestMemMove() {
    // src + count < dst
   result = MemMove(dst + 2, dst, (vec_sz - 2) * sizeof(int));
   // 1, 2, 1, 2, 3, 4, 5, 10, 9
-  ASSERT_EQUAL(result, dst)
+  ASSERT_EQUAL(result, dst + 2)
   ASSERT(equal(begin(vec2) + 2, end(vec2), begin(vec1)))
 }

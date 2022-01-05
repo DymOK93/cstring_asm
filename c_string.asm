@@ -624,61 +624,71 @@ MemMove proc frame
     .pushreg rsi
     push rdi
     .pushreg rdi
+    pushfq
+    .allocstack 8
     .endprolog
 
     mov rax, rcx    ; ret = dst
 
     test r8, r8
-    jz Done
-
-    mov rdi, rcx    ; rdi = dst
-    mov rsi, rdx    ; rsi = src
-    pushfq
-
+    jz Done         ; if (count == 0) return;
     cmp rcx, rdx
-    je Done
-    jb DispatchCopy
-
-    add rdi, r8
-    add rsi, r8
-    std
+    je Done         ; dst == src, nothing to do
+    jb NormalCopy   ; dst < src, make a copy as usual
+    std             ; RFLAGS.DF = 1
 
 ; Dispatch by size
-DispatchCopy:
+    mov rdi, rcx    
+    add rdi, r8     
+    dec rdi         ; rdi = &(static_cast<unsigned char*>(dst))[count - 1]
+    mov rsi, rdx    
+    add rsi, r8
+    dec rsi         ; rdx = &(static_cast<unsigned char*>(src))[count - 1]
+
     mov rcx, r8
-    and rcx, -8     ; 0xFFFFFFFF'FFFFFFF8
-    jnz Copy8
-    and rcx, -12    ; 0xFFFFFFFF'FFFFFFF4
-    jnz Copy4
-    and rcx, -14    ; 0xFFFFFFFF'FFFFFFF2
-    jnz Copy2
+    cmp rcx, 8  
+    jb Copy1        ; if (count < 8) goto Copy1;
+    sub rdi, 7
+    sub rsi, 7
+    test rcx, 7     
+    jz Copy8Full    ; if ((count & 7) == 0) goto Copy8Full;
+    
+; RCopy8Partial
+    shr rcx, 3      ; rcx = count / 8
+    rep movsq
+    mov rcx, r8  
+    and rcx, 7      ; rcx = count & 7
+    add rsi, 7
+    add rdi, 7
     jmp Copy1
 
-Copy8:  
-    sub r8, rcx
-    shr rcx, 3                 ; rcx /= 8
-    rep movsq  
-    jmp Copy1     
-    
-Copy4:
-    sub r8, rcx
-    shr rcx, 2                 ; rcx /= 4
-    rep movsd  
-    jmp Copy1     
+NormalCopy:
+    mov rdi, rcx    ; rdi = dst
+    mov rsi, rdx    ; rsi = src
 
-Copy2:
-    sub r8, rcx
-    shr rcx, 1                  ; rcx /= 2
-    rep movsw 
-    jmp Copy1  
+    mov rcx, r8
+    test rcx, 7     
+    jz Copy8Full    ; if ((count & 7) == 0) goto Copy8Full;
+    cmp rcx, 8  
+    jb Copy1        ; if (count < 8) goto Copy1;
+    
+Copy8Partial:
+    shr rcx, 3      ; rcx = count / 8
+    rep movsq
+    mov rcx, r8  
+    and rcx, 7      ; rcx = count & 7
 
 Copy1:
-    mov rcx, r8  
-    rep movsb    
+    rep movsb   
+    jmp Done     
 
-    popfq  
+Copy8Full:  
+    shr rcx, 3        ; count / 8
+    rep movsq  
 
 Done:
+    popfq
+
     .beginepilog
     pop rdi
     pop rsi
