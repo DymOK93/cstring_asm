@@ -526,62 +526,48 @@ MemSet proc frame
     .pushreg rdi
     .endprolog
 
-    mov rdi, rcx     ; rdi = dst
-    mov r11, rcx
-    movzx eax, dl
-    movzx r9, dl
+    mov r9, rcx
 
 ; Dispatch by size
+    test r8, r8
+    jz Done         ; if (count == 0) return;
+
+    mov rdi, rcx    ; rdi = dst
+    movzx eax, dl   ; eax = static_cast<unsigned char>(ch)
+
     mov rcx, r8
-    and rcx, -8     ; 0xFFFFFFFF'FFFFFFF8
-    jnz Set8
-    and rcx, -12    ; 0xFFFFFFFF'FFFFFFF4
-    jnz Set4
-    and rcx, -14    ; 0xFFFFFFFF'FFFFFFF2
-    jnz Set2
-    jmp Set1
+    cmp rcx, 8  
+    jb Set1         ; if (count < 8) goto Set1;
+ 
+; Fill all bytes of RAX
+    shl dx, 8
+    or ax, dx       ; 2 bytes filled
+    mov dx, ax   
+    shl edx, 16
+    or eax, edx     ; 4 bytes filled
+    mov edx, eax
+    shl rdx, 32   
+    or rax, rdx     ; 8 bytes filled
 
-Set8:
-    sub r8, rcx
-    shr rcx, 3                 ; rcx /= 8
-    mov r10d, 7
+    test rcx, 7     
+    jz Set8Full     ; if ((count & 7) == 0) goto Set8Full;
 
-@@:
-    shl r9, 8
-    or rax, r9
-    dec r10d
-    jnz @B
-
+Set8Partial:
+    shr rcx, 3      ; rcx = count / 8
     rep stosq    
-    jmp Set1
-
-Set4:
-    sub r8, rcx
-    shr rcx, 2                 ; rcx /= 4
-    mov r10d, 3
-
-@@:
-    shl r9, 8
-    or rax, r9
-    dec r10d
-    jnz @B
-
-    rep stosd   
-    jmp Set1
-
-Set2:
-    sub r8, rcx
-    shr rcx, 1                 ; rcx /= 2
-    shl r9, 8
-    or rax, r9
-    rep stosw  
-    jmp Set1 
+    mov rcx, r8  
+    and rcx, 7      ; rcx = count & 7
 
 Set1:
-    mov rcx, r8
     rep stosb 
+    jmp Done
 
-    mov rax, r11
+Set8Full:
+    shr rcx, 3         ; rcx = count / 8
+    rep stosq
+
+Done:
+    mov rax, r9
 
     .beginepilog
     pop rdi
@@ -597,10 +583,68 @@ MemCpy proc frame
     .endprolog
 
     mov rax, rcx    ; ret = dst
+
+; Dispatch by size
+    test r8, r8
+    jz Done         ; if (count == 0) return;
+
     mov rdi, rcx    ; rdi = dst
     mov rsi, rdx    ; rsi = src
 
+    mov rcx, r8
+    test rcx, 7     
+    jz Copy8Full    ; if ((count & 7) == 0) goto Copy8Full;
+    cmp rcx, 8  
+    jb Copy1        ; if (count < 8) goto Copy1;
+
+Copy8Partial:
+    shr rcx, 3      ; rcx = count / 8
+    rep movsq
+    mov rcx, r8  
+    and rcx, 7      ; rcx = count & 7
+
+Copy1:
+    rep movsb   
+    jmp Done     
+
+Copy8Full:  
+    shr rcx, 3        ; count / 8
+    rep movsq  
+
+Done:
+    .beginepilog
+    pop rdi
+    pop rsi
+    ret
+MemCpy endp
+
+; EXTERN_C void* MemMove(void* dst, const void* src, size_t count);
+MemMove proc frame
+    push rsi
+    .pushreg rsi
+    push rdi
+    .pushreg rdi
+    .endprolog
+
+    mov rax, rcx    ; ret = dst
+
+    test r8, r8
+    jz Done
+
+    mov rdi, rcx    ; rdi = dst
+    mov rsi, rdx    ; rsi = src
+    pushfq
+
+    cmp rcx, rdx
+    je Done
+    jb DispatchCopy
+
+    add rdi, r8
+    add rsi, r8
+    std
+
 ; Dispatch by size
+DispatchCopy:
     mov rcx, r8
     and rcx, -8     ; 0xFFFFFFFF'FFFFFFF8
     jnz Copy8
@@ -630,15 +674,14 @@ Copy2:
 
 Copy1:
     mov rcx, r8  
-    rep movsb      
+    rep movsb    
 
+    popfq  
+
+Done:
     .beginepilog
     pop rdi
     pop rsi
     ret
-MemCpy endp
-
-; EXTERN_C void* MemMove(void* dst, const void* src, size_t count);
-MemMove proc
 MemMove endp
     end

@@ -30,6 +30,7 @@ int main() {
     RUN_TEST(tr, TestMemCmp);
     RUN_TEST(tr, TestMemSet);
     RUN_TEST(tr, TestMemCpy);
+    // RUN_TEST(tr, TestMemMove);
 
   } catch (...) {
     return 1;
@@ -345,4 +346,30 @@ void TestMemCpy() {
   const void* result{MemCpy(dst, data(vec1), vec_sz * sizeof(int))};
   ASSERT_EQUAL(result, dst)
   ASSERT_EQUAL(vec2, vec1)
+}
+
+void TestMemMove() {
+  vector vec1{7, 42, 1, 2, 3, 4, 5, 10, 9};
+  const size_t vec_sz{size(vec1)};
+  vector<int> vec2(vec_sz);
+  int* dst{data(vec2)};
+
+  const void* result{MemMove(dst, data(vec1), vec_sz * sizeof(int))};
+  ASSERT_EQUAL(result, dst)
+  ASSERT_EQUAL(vec2, vec1)
+
+  rotate(begin(vec1), begin(vec1) + 2, end(vec1));
+  // 1, 2, 3, 4, 5, 10, 9, 42, 7
+
+  // dst + count < src
+  result = MemMove(dst, dst + 2, (vec_sz - 2) * sizeof(int));
+  // 1, 2, 3, 4, 5, 10, 9, 10, 9
+  ASSERT_EQUAL(result, dst)
+  ASSERT(equal(begin(vec2), end(vec2) - 2, begin(vec1)))
+
+   // src + count < dst
+  result = MemMove(dst + 2, dst, (vec_sz - 2) * sizeof(int));
+  // 1, 2, 1, 2, 3, 4, 5, 10, 9
+  ASSERT_EQUAL(result, dst)
+  ASSERT(equal(begin(vec2) + 2, end(vec2), begin(vec1)))
 }

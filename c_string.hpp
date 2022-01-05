@@ -56,3 +56,4 @@ EXTERN_C void* MemCpy(void* dest, const void* src, size_t count);
 void TestMemCpy();
 
 EXTERN_C void* MemMove(void* dest, const void* src, size_t count);
+void TestMemMove();
